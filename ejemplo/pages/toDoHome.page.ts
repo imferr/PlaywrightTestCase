@@ -43,6 +43,17 @@ export class ToDoHomePage {
         await this.tosCheckbox.check();
     }
 
+    async crearNuevoUsuario(fullName:string, email:string, password = "InsecurePwd") : Promise<void> {
+        await this.signUpFreeButton.waitFor({state: 'visible'});
+        await this.signUpFreeButton.click();
+        await this.fullNameInput.waitFor({state: 'visible'});
+        await this.fullNameInput.fill(fullName);
+        await this.emailInput.fill(email);
+        await this.passwordInput.fill(password);
+        await this.tosCheckbox.check();
+        await this.signUpButton.click();
+    }
+
     async guardarNuevoUsuario(){
         await this.signUpButton.click(); // onclick should have redirected to projects page
         await expect(this.page.getByText('Logout')).toBeVisible();
