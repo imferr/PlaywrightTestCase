@@ -1,6 +1,6 @@
 import { expect, Locator, Page } from '@playwright/test';
 
-export class ToDoHomePage {
+export class ProjectPage {
     readonly url = "https://todo.ly/";
     readonly page: Page;
     readonly signOutButton: Locator;
