@@ -1,0 +1,612 @@
+{
+	"info": {
+		"_postman_id": "f4f5f29e-5899-46fe-b6fb-6f473af744bc",
+		"name": "API-testing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "31371210"
+	},
+	"item": [
+		{
+			"name": "Create User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response time is less than 2000ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Valid ID\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.expect(jsonData.Id).to.above(800000);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var nameList = [\"Alice\", \"Bob\", \"Charlie\", \"Diana\", \"Ethan\", \"Fiona\", \"George\", \"Hannah\", \"Ian\", \"Julia\"];\r",
+							"var passwordList = [\"Secure123!\", \"Password456!\", \"Key789!\", \"Strong987!\", \"Random654!\", \"Access321!\", \"Vault000!\", \"Safe555!\", \"Lock999!\", \"Guard888!\"];\r",
+							"\r",
+							"var randomIndex = Math.floor(Math.random() * nameList.length);\r",
+							"\r",
+							"var selectedName = nameList[randomIndex];\r",
+							"var selectedPassword = passwordList[randomIndex];\r",
+							"\r",
+							"var generatedEmail = `${selectedName.toLowerCase()}${Math.floor(Math.random() * 1e3)}@ucb.edu.bo`;\r",
+							"\r",
+							"pm.environment.set(\"emailGenerated\", generatedEmail);\r",
+							"pm.environment.set(\"randomFullName\", selectedName);\r",
+							"pm.environment.set(\"mypassword\", selectedPassword);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"Email\": \"{{emailGenerated}}\",\r\n  \"FullName\": \"{{randomFullName}}\",\r\n  \"Password\": \"{{mypassword}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}api/user.json",
+					"host": [
+						"{{url}}api"
+					],
+					"path": [
+						"user.json"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Project",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const projectList = [\"Creative Spark\", \"Future Path\", \"Innovative Edge\"];",
+							"const selectedProject = projectList[Math.floor(Math.random() * projectList.length)];",
+							"",
+							"pm.environment.set(\"projectName\", selectedProject);",
+							"pm.environment.set(\"iconId\", Math.floor(Math.random() * 5) + 1);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 2000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+							"});",
+							"",
+							"var jsonData = pm.response.json();",
+							"pm.environment.set(\"projectId\", jsonData.Id);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{mypassword}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{emailGenerated}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Content\": \"{{projectName}}\",\n    \"Icon\": {{iconId}}\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}api/projects.json",
+					"host": [
+						"{{url}}api"
+					],
+					"path": [
+						"projects.json"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "TC3 - Get Project By Id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 2000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+							"});",
+							"",
+							"pm.test(\"Project ID matches the requested ID\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    const requestedProjectId = parseInt(pm.variables.get(\"projectId\"), 10);",
+							"    pm.expect(responseJson.Id).to.eql(requestedProjectId);",
+							"});",
+							"",
+							"pm.test(\"Icon is a valid number\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.Icon).to.be.a(\"number\").that.is.within(1, 5);",
+							"});",
+							"",
+							"pm.test(\"LastUpdatedDate is a valid date\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    const lastUpdatedDate = new Date(parseInt(responseJson.LastUpdatedDate.match(/\\d+/)[0], 10));",
+							"    pm.expect(lastUpdatedDate.toString()).to.not.eql(\"Invalid Date\");",
+							"});",
+							"",
+							"pm.test(\"Project name is not empty\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.Content).to.be.a(\"string\").that.is.not.empty;",
+							"});",
+							"",
+							"pm.test(\"Response body is JSON\", function () {",
+							"    pm.response.to.be.json;",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{mypassword}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{emailGenerated}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}api/projects/{{projectId}}.json",
+					"host": [
+						"{{url}}api"
+					],
+					"path": [
+						"projects",
+						"{{projectId}}.json"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Item",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const itemNames = [\"AlphaItem\", \"BetaItem\", \"GammaItem\", \"DeltaItem\", \"EpsilonItem\"];",
+							"",
+							"const selectedItem = itemNames[Math.floor(Math.random() * itemNames.length)];",
+							"",
+							"pm.environment.set(\"generatedItemContent\", selectedItem);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 2000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{mypassword}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{emailGenerated}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Content\": \"{{generatedItemContent}}\",\n    \"ProjectId\": {{projectId}}\n}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}api/items.json",
+					"host": [
+						"{{url}}api"
+					],
+					"path": [
+						"items.json"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "TC6 - Get Items of a Project",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 2000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+							"});",
+							"",
+							"pm.test(\"All items belong to the same project\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    const projectId = pm.variables.get(\"projectId\");",
+							"    responseJson.forEach(item => {",
+							"        pm.expect(item.ProjectId).to.eql(parseInt(projectId, 10)); // Ajusta si ProjectId no es un número",
+							"    });",
+							"});",
+							"",
+							"pm.test(\"Item IDs are unique\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    const ids = responseJson.map(item => item.Id);",
+							"    const uniqueIds = new Set(ids);",
+							"    pm.expect(uniqueIds.size).to.eql(ids.length);",
+							"});",
+							"",
+							"pm.test(\"Response does not contain error message\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.not.have.property(\"ErrorMessage\");",
+							"});",
+							"",
+							"pm.test(\"All items have non-empty Content\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    responseJson.forEach(item => {",
+							"        pm.expect(item.Content).to.be.a(\"string\");",
+							"        pm.expect(item.Content.trim()).to.not.be.empty;",
+							"    });",
+							"});",
+							"",
+							"pm.test(\"No duplicate Content values\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    const contents = responseJson.map(item => item.Content);",
+							"    const uniqueContents = new Set(contents);",
+							"    pm.expect(uniqueContents.size).to.eql(contents.length);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{mypassword}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{emailGenerated}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}api/projects/{{projectId}}/items.json",
+					"host": [
+						"{{url}}api"
+					],
+					"path": [
+						"projects",
+						"{{projectId}}",
+						"items.json"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "TC4 - Update Project By Id",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const projectList = [\"Creative Spark\", \"Future Path\", \"Innovative Edge\"];",
+							"const selectedProject = projectList[Math.floor(Math.random() * projectList.length)];",
+							"",
+							"pm.environment.set(\"projectName\", selectedProject);",
+							"pm.environment.set(\"iconId\", Math.floor(Math.random() * 5) + 1);",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 2000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+							"});",
+							"",
+							"const responseXml = pm.response.text();",
+							"const jsonResponse = xml2Json(responseXml);",
+							"",
+							"pm.test(\"Response is valid XML and converted to JSON\", function () {",
+							"    pm.expect(jsonResponse).to.be.an(\"object\");",
+							"});",
+							"const project = jsonResponse.ProjectObject;",
+							"",
+							"pm.test(\"Response has all required fields\", function () {",
+							"    const requiredFields = [",
+							"        \"Id\", \"Content\", \"ItemsCount\", \"Icon\", \"ItemType\",",
+							"        \"ParentId\", \"Collapsed\", \"ItemOrder\", \"Children\",",
+							"        \"IsProjectShared\", \"IsShareApproved\", \"IsOwnProject\",",
+							"        \"LastSyncedDateTime\", \"LastUpdatedDate\", \"Deleted\"",
+							"    ];",
+							"    requiredFields.forEach(field => {",
+							"        pm.expect(project).to.have.property(field);",
+							"    });",
+							"});",
+							"",
+							"pm.test(\"Project ID matches the requested ID\", function () {",
+							"    const requestedProjectId = String(pm.variables.get(\"projectId\"));",
+							"    pm.expect(project.Id).to.eql(requestedProjectId);",
+							"});",
+							"",
+							"pm.test(\"Project name has been updated\", function () {",
+							"    const updatedProjectName = String(pm.variables.get(\"projectName\"));",
+							"    pm.expect(project.Content).to.eql(updatedProjectName);",
+							"});",
+							"",
+							"pm.test(\"Icon ID has been updated\", function () {",
+							"    const updatedIconId = String(pm.variables.get(\"iconId\"));",
+							"    pm.expect(project.Icon).to.eql(updatedIconId);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{mypassword}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{emailGenerated}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "<ProjectObject>\n  <Content>{{projectName}}</Content>\n  <Icon>{{iconId}}</Icon>\n</ProjectObject>",
+					"options": {
+						"raw": {
+							"language": "xml"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}api/projects/{{projectId}}.xml",
+					"host": [
+						"{{url}}api"
+					],
+					"path": [
+						"projects",
+						"{{projectId}}.xml"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "TC5 - Delete Project By Id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 2000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+							"});",
+							"",
+							"pm.test(\"Verify the response is JSON\", function () {",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+							"});",
+							"",
+							"pm.test(\"Verify the 'Id' is an integer\", function () {",
+							"    pm.expect(pm.response.json().Id).to.be.an('number');",
+							"});",
+							"",
+							"pm.test(\"Verify the project is deleted\", function () {",
+							"    pm.expect(pm.response.json().Deleted).to.eql(true);",
+							"});",
+							"",
+							"pm.test(\"No error in response\", function () {",
+							"    pm.response.to.not.be.error;",
+							"});",
+							"",
+							"pm.test(\"Verify all attributes are present\", function () {",
+							"    const responseBody = pm.response.json();",
+							"    pm.expect(responseBody.Id).to.be.an('number');",
+							"    pm.expect(responseBody.Content).to.be.a('string');",
+							"    pm.expect(responseBody.ItemsCount).to.be.a('number');",
+							"    pm.expect(responseBody.Icon).to.be.a('number');",
+							"    pm.expect(responseBody.ItemType).to.be.a('number');",
+							"    pm.expect(responseBody.ParentId).to.be.null;",
+							"    pm.expect(responseBody.Collapsed).to.be.false;",
+							"    pm.expect(responseBody.ItemOrder).to.be.a('number');",
+							"    pm.expect(responseBody.Children).to.be.an('array');",
+							"    pm.expect(responseBody.IsProjectShared).to.be.false;",
+							"    pm.expect(responseBody.ProjectShareOwnerName).to.be.null;",
+							"    pm.expect(responseBody.ProjectShareOwnerEmail).to.be.null;",
+							"    pm.expect(responseBody.IsShareApproved).to.be.false;",
+							"    pm.expect(responseBody.IsOwnProject).to.be.true;",
+							"    pm.expect(responseBody.LastSyncedDateTime).to.include(\"/Date(\");",
+							"    pm.expect(responseBody.LastUpdatedDate).to.include(\"/Date(\");",
+							"    pm.expect(responseBody.Deleted).to.be.true;",
+							"    pm.expect(responseBody.SyncClientCreationId).to.be.null;",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{mypassword}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{emailGenerated}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}api/projects/{{projectId}}.json",
+					"host": [
+						"{{url}}api"
+					],
+					"path": [
+						"projects",
+						"{{projectId}}.json"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "emailGenerated",
+			"value": ""
+		}
+	]
+}
