@@ -19,7 +19,7 @@ export class ProjectPage {
         this.signOutButton = page.locator('.signout');
         this.penultimateTask = page.locator('#mainItemList > li:nth-last-child(2)');
         this.penultimateTaskOptionsButton = page.locator('#mainItemList > li:nth-last-child(2) .ItemMenu');
-        this.penultimateTaskSetPriorityButton = page.locator('#itemContextMenu > li.share.separator > div#Div1 span:nth-child(2)');
+        this.penultimateTaskSetPriorityButton = page.locator('#itemContextMenu > li.share.separator > div#Div1 span:nth-child(3)');
         this.secondTask = page.locator('#mainItemList > li:nth-child(2)');
         this.secondTaskOptionsButton = page.locator('#mainItemList > li:nth-child(2) .ItemMenu');
         this.secondTaskDeleteButton = page.locator('#itemContextMenu > li.delete.separator > a');
@@ -30,29 +30,67 @@ export class ProjectPage {
 
     async goto() {
         await this.page.goto(this.url);
+
+        // Validar que la página se ha cargado correctamente
+        await expect(this.page).toHaveURL(this.url);
+        await expect(this.signOutButton).toBeVisible();
     }
 
     async editAndPrioritizePenultimateItem() {
+        // Verificar que la tarea existe antes de interactuar
+        await expect(this.penultimateTask).toBeVisible();
+
+        // Abrir las opciones de la penúltima tarea
         await this.penultimateTask.hover();
         await this.penultimateTaskOptionsButton.click();
+        await expect(this.penultimateTaskOptionsButton).toBeVisible();
+
+        // Establecer prioridad
         await this.penultimateTaskSetPriorityButton.click();
+
+        // Validar que el cargador aparece y desaparece
+        await expect(this.loader).toBeVisible();
         await this.loader.waitFor({ state: 'hidden' });
-        const highPriorityColor = 'rgb(22, 139, 184)';
+
+        // Validar que el color de alta prioridad se aplica correctamente
+        const highPriorityColor = 'rgb(81, 153, 45)';
         await expect(this.penultimateTask.locator('.ItemContentDiv')).toHaveCSS('color', highPriorityColor);
+
+        // Confirmar que la tarea sigue visible con la nueva prioridad
+        await expect(this.penultimateTask).toBeVisible();
     }
 
     async deleteSecondItem() {
+        // Verificar que la segunda tarea existe
+        await expect(this.secondTask).toBeVisible();
+
+        // Obtener el ID de la tarea y validar que no es nulo
         const secondTaskId = await this.secondTask.getAttribute('itemid');
         if (!secondTaskId) {
             throw new Error('Second task ID could not be found.');
         }
+
+        // Abrir las opciones de la segunda tarea
         await this.secondTask.hover();
         await this.secondTaskOptionsButton.click();
+        await expect(this.secondTaskOptionsButton).toBeVisible();
+
+        // Eliminar la tarea
         await this.secondTaskDeleteButton.click();
-        await this.notificationMessage.waitFor({ state: 'visible' });
+
+        // Validar que aparece un mensaje de notificación
+        await expect(this.notificationMessage).toBeVisible();
         const deletionMessage = 'Info. Item has been Deleted';
         await expect(this.notificationMessage).toHaveText(deletionMessage);
+
+        // Validar que el cargador aparece y desaparece
+        await expect(this.loader).toBeVisible();
         await this.loader.waitFor({ state: 'hidden' });
+
+        // Confirmar que la tarea ya no está en la lista
         await expect(this.taskList).not.toContainText(secondTaskId);
+
+        // Confirmar que el mensaje de notificación desaparece
+        await this.notificationMessage.waitFor({ state: 'hidden' });
     }
 }
